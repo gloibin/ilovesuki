@@ -16,12 +16,18 @@
             height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
+            /* Fix mobile viewport issues */
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
         }
 
         .game-container {
             position: relative;
             width: 100vw;
             height: 100vh;
+            /* Alternative mobile-friendly dimensions */
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
             background: #000;
         }
 
@@ -34,6 +40,8 @@
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             grid-template-rows: repeat(5, 1fr);
+            /* Fix mobile grid issues */
+            grid-gap: 0;
         }
 
         .image-section {
@@ -42,6 +50,9 @@
             background-repeat: no-repeat;
             opacity: 0;
             transition: opacity 2s ease-in-out;
+            /* Fix mobile background issues */
+            background-attachment: scroll;
+            will-change: opacity;
         }
 
         .image-section.revealed {
@@ -93,13 +104,13 @@
 
         .message {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            bottom: 20px;
+            left: 20px;
             color: white;
             font-size: 16px;
             z-index: 1000;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            text-align: right;
+            text-align: left;
             max-width: 300px;
         }
     </style>
@@ -154,9 +165,15 @@
                 const col = i % 6;
                 const row = Math.floor(i / 6);
                 
-                // Set background position for this section (pixel-based approach)
-                // Move the background image to show the correct portion
-                section.style.backgroundPosition = `${-col * (100/6)}% ${-row * (100/5)}%`;
+                // Set background position for this section (mobile-optimized)
+                // Use more precise decimal calculations for mobile browsers
+                const bgPosX = -(col * 100 / 5); // -0%, -20%, -40%, -60%, -80%, -100%
+                const bgPosY = -(row * 100 / 4); // -0%, -25%, -50%, -75%, -100%
+                section.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+                
+                // Additional mobile fixes
+                section.style.backgroundAttachment = 'scroll';
+                section.style.transform = 'translateZ(0)'; // Force hardware acceleration
                 
                 container.appendChild(section);
             }
