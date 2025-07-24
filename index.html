@@ -154,8 +154,8 @@
                 const col = i % 6;
                 const row = Math.floor(i / 6);
                 
-                // Set background position for this section
-                section.style.backgroundPosition = `${col * -100}% ${row * -100}%`;
+                // Set background position for this section (corrected calculation)
+                section.style.backgroundPosition = `${col * -20}% ${row * -25}%`;
                 
                 container.appendChild(section);
             }
