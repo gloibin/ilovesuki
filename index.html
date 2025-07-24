@@ -38,7 +38,7 @@
 
         .image-section {
             position: relative;
-            background-size: 600% 500%;
+            background-size: 600% 500%; /* 6 columns × 5 rows */
             background-repeat: no-repeat;
             opacity: 0;
             transition: opacity 2s ease-in-out;
@@ -154,8 +154,9 @@
                 const col = i % 6;
                 const row = Math.floor(i / 6);
                 
-                // Set background position for this section (corrected calculation)
-                section.style.backgroundPosition = `${col * -20}% ${row * -25}%`;
+                // Set background position for this section (proper grid calculation)
+                // For a 6×5 grid, each section shows part of the enlarged image  
+                section.style.backgroundPosition = `${(col / 5) * 100}% ${(row / 4) * 100}%`;
                 
                 container.appendChild(section);
             }
