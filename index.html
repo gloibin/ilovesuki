@@ -154,9 +154,9 @@
                 const col = i % 6;
                 const row = Math.floor(i / 6);
                 
-                // Set background position for this section (proper grid calculation)
-                // For a 6×5 grid, each section shows part of the enlarged image  
-                section.style.backgroundPosition = `${(col / 5) * 100}% ${(row / 4) * 100}%`;
+                // Set background position for this section (pixel-based approach)
+                // Move the background image to show the correct portion
+                section.style.backgroundPosition = `${-col * (100/6)}% ${-row * (100/5)}%`;
                 
                 container.appendChild(section);
             }
