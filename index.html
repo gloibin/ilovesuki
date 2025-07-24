@@ -168,9 +168,8 @@
                 const col = i % 6;
                 const row = Math.floor(i / 6);
                 
-                // Set background position for this section (back to working version)
-                // Move the background image to show the correct portion
-                section.style.backgroundPosition = `${-col * (100/6)}% ${-row * (100/5)}%`;
+                // Set background position for this section (exact working calculation)
+                section.style.backgroundPosition = `${col * -16.666}% ${row * -20}%`;
                 
                 container.appendChild(section);
             }
