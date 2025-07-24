@@ -150,10 +150,13 @@
         }
 
         function initializeGame() {
+            console.log('Initializing game...');
             const container = document.getElementById('imageContainer');
             const today = new Date();
             const startDate = new Date(today.getFullYear(), today.getMonth(), 1); // First day of current month
             currentDay = Math.min(today.getDate(), 30); // Cap at 30 days
+            
+            console.log(`Current day: ${currentDay}`);
             
             // Create 30 sections (6x5 grid)
             for (let i = 0; i < 30; i++) {
@@ -177,6 +180,8 @@
                 
                 container.appendChild(section);
             }
+
+            console.log('Sections created, trying to load image...');
 
             // Try multiple image formats
             const imageFormats = ['suki.jpg', 'suki.jpeg', 'suki.png', 'suki.webp'];
@@ -212,11 +217,13 @@
 
                     // Reveal sections based on current day
                     sectionsRevealed = Math.min(currentDay - 1, 30);
+                    console.log(`Revealing ${sectionsRevealed} sections`);
                     revealSections(sectionsRevealed);
                     
                     updateUI();
                 };
                 testImg.onerror = function() {
+                    console.log(`Failed to load ${imageFormats[formatIndex]}, trying next format...`);
                     formatIndex++;
                     tryNextFormat();
                 };
