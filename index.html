@@ -133,16 +133,9 @@
         let sectionsRevealed = 0;
         let canRevealToday = true;
 
-        async function loadImage() {
-            try {
-                const imageData = await window.fs.readFile('image.jpg');
-                const blob = new Blob([imageData], { type: 'image/jpeg' });
-                return URL.createObjectURL(blob);
-            } catch (error) {
-                console.log('Using uploaded image...');
-                // This will be replaced with the actual uploaded image
-                return 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAEAAQADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD//2Q==';
-            }
+        function loadImage() {
+            // For GitHub/web hosting, the image should be in the same folder as the HTML file
+            return 'suki.jpg';
         }
 
         function initializeGame() {
@@ -167,19 +160,52 @@
                 container.appendChild(section);
             }
 
-            const imageUrl = loadImage();
+            // Try multiple image formats
+            const imageFormats = ['suki.jpg', 'suki.jpeg', 'suki.png', 'suki.webp'];
+            let formatIndex = 0;
             
-            // Apply the image to all sections
-            const sections = document.querySelectorAll('.image-section');
-            sections.forEach(section => {
-                section.style.backgroundImage = `url(${imageUrl})`;
-            });
+            function tryNextFormat() {
+                if (formatIndex >= imageFormats.length) {
+                    console.error('Failed to load image in any format');
+                    document.getElementById('message').textContent = 'Error: Could not load image. Try uploading to a web server like GitHub Pages.';
+                    
+                    // Show colored squares so game still works
+                    const sections = document.querySelectorAll('.image-section');
+                    sections.forEach((section, index) => {
+                        section.style.backgroundColor = `hsl(${index * 12}, 70%, 60%)`;
+                    });
+                    
+                    sectionsRevealed = Math.min(currentDay - 1, 30);
+                    revealSections(sectionsRevealed);
+                    updateUI();
+                    return;
+                }
+                
+                const testImg = new Image();
+                testImg.onload = function() {
+                    console.log(`Image loaded successfully: ${imageFormats[formatIndex]}`);
+                    const imageUrl = imageFormats[formatIndex];
+                    
+                    // Apply the image to all sections
+                    const sections = document.querySelectorAll('.image-section');
+                    sections.forEach(section => {
+                        section.style.backgroundImage = `url(${imageUrl})`;
+                    });
 
-            // Reveal sections based on current day
-            sectionsRevealed = Math.min(currentDay - 1, 30);
-            revealSections(sectionsRevealed);
+                    // Reveal sections based on current day
+                    sectionsRevealed = Math.min(currentDay - 1, 30);
+                    revealSections(sectionsRevealed);
+                    
+                    updateUI();
+                };
+                testImg.onerror = function() {
+                    formatIndex++;
+                    tryNextFormat();
+                };
+                testImg.src = imageFormats[formatIndex];
+            }
             
-            updateUI();
+            tryNextFormat();
         }
 
         function revealSections(count) {
