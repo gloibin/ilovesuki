@@ -78,12 +78,18 @@
             z-index: 2;
         }
         .section {
-            background-color: black;
             opacity: 1;
             transition: opacity 2s ease-in-out;
+            animation: breathe 6s ease-in-out infinite;
         }
         .section.revealed {
             opacity: 0;
+            animation: none; /* Stop animation when revealed */
+        }
+        @keyframes breathe {
+            0% { background-color: #9580C8; } /* Muted periwinkle */
+            50% { background-color: #6A6AB0; } /* Muted lapis */
+            100% { background-color: #9580C8; }
         }
         #button {
             position: absolute;
@@ -93,15 +99,32 @@
             background-color: black;
             color: white;
             font-family: cursive;
-            padding: 10px 20px;
-            border: none;
+            padding: 15px 30px;
+            border: 2px solid white;
+            border-radius: 10px;
             cursor: pointer;
             z-index: 3;
-            font-size: 16px;
+            font-size: 20px;
+            font-weight: bold;
         }
         #button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+        #day-text {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: sans-serif;
+            font-size: 18px;
+            z-index: 3;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        #day-text .suki-text {
+            font-size: 16px; /* Slightly smaller than day text */
         }
     </style>
 </head>
@@ -110,24 +133,33 @@
         <div id="background-image"></div>
         <div id="grid"></div>
         <button id="button">i love suki</button>
+        <div id="day-text"></div>
     </div>
     <script>
-        const revealOrder = [20, 3, 0, 16, 11, 13, 23, 28, 8, 25, 27, 21, 15, 10, 6, 9, 7, 18, 17, 22, 14, 12, 29, 5, 24, 1, 2, 19, 4, 26];
+        // Adjusted reveal order to ensure day 13 (index 12) is not in central sections (14, 15, 20, 21)
+        const revealOrder = [20, 3, 0, 16, 11, 13, 23, 28, 8, 25, 27, 21, 10, 15, 6, 9, 7, 18, 17, 22, 14, 12, 29, 5, 24, 1, 2, 19, 4, 26];
         
         const grid = document.getElementById('grid');
         for (let i = 0; i < 30; i++) {
             const div = document.createElement('div');
             div.classList.add('section');
             div.dataset.index = i;
+            // Assign random animation duration between 5s and 8s
+            const duration = 5 + Math.random() * 3;
+            div.style.animationDuration = `${duration}s`;
             grid.appendChild(div);
         }
         
         const sections = document.querySelectorAll('.section');
         const button = document.getElementById('button');
+        const dayText = document.getElementById('day-text');
         
         const day = new Date().getDate();
         const currentDay = Math.min(day, 30);
         const revealedOnLoad = currentDay - 1;
+        
+        // Set initial text
+        dayText.innerHTML = `<span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
         
         // Instantly reveal previous days' sections (no animation)
         for (let i = 0; i < revealedOnLoad; i++) {
@@ -135,11 +167,12 @@
             sections[index].classList.add('revealed');
         }
         
-        // Handle button click for today's section (with animation)
+        // Handle button click for today's section
         button.addEventListener('click', () => {
             if (currentDay <= 30) {
                 const index = revealOrder[currentDay - 1];
                 sections[index].classList.add('revealed');
+                dayText.innerHTML = `Day ${currentDay}/30<br><span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
                 button.disabled = true; // Disable to prevent multiple clicks (resets on refresh)
             }
         });
