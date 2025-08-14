@@ -79,12 +79,12 @@
         }
         .section {
             opacity: 1;
-            transition: opacity 2s ease-in-out;
+            transition: opacity 2s ease-in-out; /* Ensure 2s fade for reveal */
             animation: breathe 6s ease-in-out infinite;
         }
         .section.revealed {
             opacity: 0;
-            animation: none; /* Stop animation when revealed */
+            animation: none; /* Stop breathing animation when revealed */
         }
         @keyframes breathe {
             0% { background-color: #9580C8; } /* Muted periwinkle */
@@ -181,7 +181,7 @@
         button.addEventListener('click', () => {
             if (currentDay <= 30) {
                 const index = revealOrder[currentDay - 1];
-                sections[index].classList.add('revealed');
+                sections[index].classList.add('revealed'); // Triggers 2s opacity transition
                 dayText.innerHTML = `Day ${currentDay}/30<br><span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
                 button.disabled = true; // Disable to prevent multiple clicks (resets on refresh)
             }
