@@ -88,7 +88,7 @@
         }
         @keyframes breathe {
             0% { background-color: #9580C8; } /* Muted periwinkle */
-            50% { background-color: #4A4AA2; } /* Updated muted lapis */
+            50% { background-color: #4A4AA2; } /* Muted lapis */
             100% { background-color: #9580C8; }
         }
         #button {
@@ -140,6 +140,12 @@
         const revealOrder = [20, 3, 0, 16, 11, 13, 23, 28, 8, 25, 27, 21, 10, 15, 6, 9, 7, 18, 17, 22, 14, 12, 29, 5, 24, 1, 2, 19, 4, 26];
         
         const grid = document.getElementById('grid');
+        // Randomly select ~half of the 30 sections (15) to start with second color
+        const delayedIndices = new Set();
+        while (delayedIndices.size < 15) {
+            delayedIndices.add(Math.floor(Math.random() * 30));
+        }
+        
         for (let i = 0; i < 30; i++) {
             const div = document.createElement('div');
             div.classList.add('section');
@@ -147,6 +153,10 @@
             // Assign random animation duration between 5s and 8s
             const duration = 5 + Math.random() * 3;
             div.style.animationDuration = `${duration}s`;
+            // Apply delay to ~half the sections to start at second color
+            if (delayedIndices.has(i)) {
+                div.style.animationDelay = `-${duration / 2}s`; // Start at midpoint of animation
+            }
             grid.appendChild(div);
         }
         
