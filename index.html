@@ -88,7 +88,7 @@
         }
         @keyframes breathe {
             0% { background-color: #9580C8; } /* Muted periwinkle */
-            50% { background-color: #6A6AB0; } /* Muted lapis */
+            50% { background-color: #4A4AA2; } /* Updated muted lapis */
             100% { background-color: #9580C8; }
         }
         #button {
@@ -158,8 +158,8 @@
         const currentDay = Math.min(day, 30);
         const revealedOnLoad = currentDay - 1;
         
-        // Set initial text
-        dayText.innerHTML = `<span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
+        // Set initial text with both lines
+        dayText.innerHTML = `Day ${revealedOnLoad}/30<br><span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
         
         // Instantly reveal previous days' sections (no animation)
         for (let i = 0; i < revealedOnLoad; i++) {
