@@ -1,37 +1,72 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I Love Suki</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
-        * {
+        body, html {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body, html {
             height: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            /* Fix mobile viewport issues */
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
         }
-
-        .game-container {
+        #container {
             position: relative;
-            width: 100vw;
-            height: 100vh;
-            /* Alternative mobile-friendly dimensions */
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            background: #000;
+            width: 100%;
+            height: 100%;
         }
-
-        .image-container {
+        #background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('dog.jpg'); /* REPLACE THIS WITH YOUR ACTUAL IMAGE URL OR FILE PATH */
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        }
+        #grid {
             position: absolute;
             top: 0;
             left: 0;
@@ -40,248 +75,74 @@
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             grid-template-rows: repeat(5, 1fr);
-            /* Fix mobile grid issues */
-            grid-gap: 0;
+            z-index: 2;
         }
-
-        .image-section {
-            position: relative;
-            background-size: 600% 500%; /* 6 columns × 5 rows */
-            background-repeat: no-repeat;
-            opacity: 0;
-            transition: opacity 2s ease-in-out;
-            /* Fix mobile background issues */
-            background-attachment: scroll;
-            will-change: opacity;
-        }
-
-        .image-section.revealed {
+        .section {
+            background-color: black;
             opacity: 1;
+            transition: opacity 2s ease-in-out;
         }
-
-        .reveal-button {
+        .section.revealed {
+            opacity: 0;
+        }
+        #button {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #000;
+            background-color: black;
             color: white;
-            border: 2px solid white;
-            padding: 15px 30px;
-            font-family: 'Dancing Script', cursive;
-            font-size: 24px;
-            font-weight: 700;
+            font-family: cursive;
+            padding: 10px 20px;
+            border: none;
             cursor: pointer;
-            border-radius: 8px;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            z-index: 3;
+            font-size: 16px;
         }
-
-        .reveal-button:hover {
-            background: #333;
-            transform: translate(-50%, -50%) scale(1.05);
-        }
-
-        .reveal-button:active {
-            transform: translate(-50%, -50%) scale(0.95);
-        }
-
-        .reveal-button.disabled {
+        #button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        .progress-info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            font-size: 18px;
-            z-index: 1000;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-
-        .message {
-            position: absolute;
-            top: 50px;
-            left: 20px;
-            color: white;
-            font-size: 14px;
-            z-index: 1000;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            text-align: left;
-            max-width: 300px;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="progress-info">
-            <div id="progress-text">Loading...</div>
-        </div>
-        
-        <div class="message" id="message">
-            Click the button to reveal today's section of Suki!
-        </div>
-
-        <div class="image-container" id="imageContainer">
-            <!-- 30 sections will be generated by JavaScript -->
-        </div>
-
-        <button class="reveal-button" id="revealButton">i love suki</button>
+    <div id="container">
+        <div id="background-image"></div>
+        <div id="grid"></div>
+        <button id="button">i love suki</button>
     </div>
-
     <script>
-        // Predefined reveal order - designed to avoid adjacent sections until around day 10
-        const revealOrder = [
-            14, 2, 28, 9, 21, 5, 17, 26, 11, 3,
-            19, 29, 7, 23, 1, 15, 25, 8, 20, 4,
-            12, 27, 6, 18, 10, 24, 0, 16, 22, 13
-        ];
-
-        let currentDay = 1;
-        let sectionsRevealed = 0;
-        let canRevealToday = true;
-
-        function loadImage() {
-            // For GitHub/web hosting, the image should be in the same folder as the HTML file
-            return 'suki.jpg';
+        const revealOrder = [20, 3, 0, 16, 11, 13, 23, 28, 8, 25, 27, 21, 15, 10, 6, 9, 7, 18, 17, 22, 14, 12, 29, 5, 24, 1, 2, 19, 4, 26];
+        
+        const grid = document.getElementById('grid');
+        for (let i = 0; i < 30; i++) {
+            const div = document.createElement('div');
+            div.classList.add('section');
+            div.dataset.index = i;
+            grid.appendChild(div);
         }
-
-        function initializeGame() {
-            console.log('Initializing game...');
-            const container = document.getElementById('imageContainer');
-            const today = new Date();
-            const startDate = new Date(today.getFullYear(), today.getMonth(), 1); // First day of current month
-            currentDay = Math.min(today.getDate(), 30); // Cap at 30 days
-            
-            console.log(`Current day: ${currentDay}`);
-            
-            // Create 30 sections (6x5 grid)
-            for (let i = 0; i < 30; i++) {
-                const section = document.createElement('div');
-                section.className = 'image-section';
-                section.id = `section-${i}`;
-                
-                // Calculate grid position (6 columns, 5 rows)
-                const col = i % 6;
-                const row = Math.floor(i / 6);
-                
-                // Set background position for this section (exact working calculation)
-                section.style.backgroundPosition = `${col * -16.666}% ${row * -20}%`;
-                
-                container.appendChild(section);
-            }
-
-            console.log('Sections created, trying to load image...');
-
-            // Try multiple image formats
-            const imageFormats = ['suki.jpg', 'suki.jpeg', 'suki.png', 'suki.webp'];
-            let formatIndex = 0;
-            
-            function tryNextFormat() {
-                if (formatIndex >= imageFormats.length) {
-                    console.error('Failed to load image in any format');
-                    document.getElementById('message').textContent = 'Error: Could not load image. Try uploading to a web server like GitHub Pages.';
-                    
-                    // Show colored squares so game still works
-                    const sections = document.querySelectorAll('.image-section');
-                    sections.forEach((section, index) => {
-                        section.style.backgroundColor = `hsl(${index * 12}, 70%, 60%)`;
-                    });
-                    
-                    sectionsRevealed = Math.min(currentDay - 1, 30);
-                    revealSections(sectionsRevealed);
-                    updateUI();
-                    return;
-                }
-                
-                const testImg = new Image();
-                testImg.onload = function() {
-                    console.log(`Image loaded successfully: ${imageFormats[formatIndex]}`);
-                    const imageUrl = imageFormats[formatIndex];
-                    
-                    // Apply the image to all sections
-                    const sections = document.querySelectorAll('.image-section');
-                    sections.forEach(section => {
-                        section.style.backgroundImage = `url(${imageUrl})`;
-                    });
-
-                    // Reveal sections based on current day
-                    sectionsRevealed = Math.min(currentDay - 1, 30);
-                    console.log(`Revealing ${sectionsRevealed} sections`);
-                    revealSections(sectionsRevealed);
-                    
-                    updateUI();
-                };
-                testImg.onerror = function() {
-                    console.log(`Failed to load ${imageFormats[formatIndex]}, trying next format...`);
-                    formatIndex++;
-                    tryNextFormat();
-                };
-                testImg.src = imageFormats[formatIndex];
-            }
-            
-            tryNextFormat();
+        
+        const sections = document.querySelectorAll('.section');
+        const button = document.getElementById('button');
+        
+        const day = new Date().getDate();
+        const currentDay = Math.min(day, 30);
+        const revealedOnLoad = currentDay - 1;
+        
+        // Instantly reveal previous days' sections (no animation)
+        for (let i = 0; i < revealedOnLoad; i++) {
+            const index = revealOrder[i];
+            sections[index].classList.add('revealed');
         }
-
-        function revealSections(count) {
-            for (let i = 0; i < count; i++) {
-                const sectionIndex = revealOrder[i];
-                const section = document.getElementById(`section-${sectionIndex}`);
-                if (section) {
-                    section.classList.add('revealed');
-                }
-            }
-        }
-
-        function revealNextSection() {
-            if (sectionsRevealed < currentDay && sectionsRevealed < 30) {
-                const nextSectionIndex = revealOrder[sectionsRevealed];
-                const section = document.getElementById(`section-${nextSectionIndex}`);
-                
-                if (section) {
-                    section.classList.add('revealed');
-                    sectionsRevealed++;
-                    canRevealToday = false;
-                    updateUI();
-                }
-            }
-        }
-
-        function updateUI() {
-            const progressText = document.getElementById('progress-text');
-            const revealButton = document.getElementById('revealButton');
-            const message = document.getElementById('message');
-            
-            progressText.textContent = `Day ${currentDay} • ${sectionsRevealed}/30 sections revealed`;
-            
-            if (sectionsRevealed >= currentDay || sectionsRevealed >= 30) {
-                revealButton.classList.add('disabled');
-                revealButton.disabled = true;
-                
-                if (sectionsRevealed >= 30) {
-                    message.textContent = "Suki has been completely revealed! 🐕❤️";
-                } else {
-                    message.textContent = "Come back tomorrow for the next section!";
-                }
-            } else {
-                revealButton.classList.remove('disabled');
-                revealButton.disabled = false;
-                message.textContent = "Click the button to reveal today's section of Suki!";
-            }
-        }
-
-        // Event listeners
-        document.getElementById('revealButton').addEventListener('click', function() {
-            if (!this.disabled) {
-                revealNextSection();
+        
+        // Handle button click for today's section (with animation)
+        button.addEventListener('click', () => {
+            if (currentDay <= 30) {
+                const index = revealOrder[currentDay - 1];
+                sections[index].classList.add('revealed');
+                button.disabled = true; // Disable to prevent multiple clicks (resets on refresh)
             }
         });
-
-        // Initialize game when page loads
-        window.addEventListener('load', initializeGame);
     </script>
 </body>
 </html>
