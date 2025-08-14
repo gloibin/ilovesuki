@@ -78,13 +78,13 @@
             z-index: 2;
         }
         .section {
-            clip-path: circle(100%); /* Fully covers section */
-            transition: clip-path 4s ease-in-out; /* 4s circular reveal */
+            clip-path: circle(50% at center); /* Smaller circle to fit section */
+            transition: clip-path 3s ease-in-out; /* 3s circular reveal */
             animation: breathe 6s ease-in-out infinite;
             background-color: #9580C8; /* Initial color for breathing */
         }
         .section.revealed {
-            clip-path: circle(0%); /* Shrink to reveal image */
+            clip-path: circle(0% at center); /* Shrink to reveal image */
             animation: none; /* Stop breathing animation */
         }
         .section.hidden {
@@ -188,22 +188,4 @@
                 const section = sections[index];
                 console.log(`Revealing section ${index} with circular clip-path transition`); // Debug log
                 // Stop breathing animation to avoid conflicts
-                section.style.animation = 'none';
-                // Force reflow to ensure transition triggers
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        section.classList.add('revealed'); // Triggers 4s circular clip-path
-                        // Hide section after transition completes
-                        section.addEventListener('transitionend', () => {
-                            section.classList.add('hidden');
-                            console.log(`Transition ended for section ${index}`); // Debug log
-                        }, { once: true });
-                    });
-                });
-                dayText.innerHTML = `Day ${currentDay}/30<br><span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
-                button.disabled = true; // Disable to prevent multiple clicks (resets on refresh)
-            }
-        });
-    </script>
-</body>
-</html>
+                section.style.animation =
