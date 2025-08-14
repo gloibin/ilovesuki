@@ -78,16 +78,18 @@
             z-index: 2;
         }
         .section {
-            transform: translateY(0);
-            transition: transform 2s ease-in-out; /* 2s slide-up for reveal */
+            opacity: 0.99; /* Slight opacity to ensure transition triggers */
+            filter: blur(20px);
+            transition: filter 2s ease-in-out, opacity 2s ease-in-out; /* 2s blur-to-clear and opacity */
             animation: breathe 6s ease-in-out infinite;
         }
         .section.revealed {
-            transform: translateY(-100%); /* Slide up to reveal image */
+            filter: blur(0); /* Clear blur to reveal image */
+            opacity: 0;
             animation: none; /* Stop breathing animation */
         }
         .section.hidden {
-            visibility: hidden; /* Hide after slide */
+            visibility: hidden; /* Hide after transition */
         }
         @keyframes breathe {
             0% { background-color: #9580C8; } /* Muted periwinkle */
@@ -185,15 +187,19 @@
             if (currentDay <= 30) {
                 const index = revealOrder[currentDay - 1];
                 const section = sections[index];
+                console.log(`Revealing section ${index} with blur transition`); // Debug log
                 // Stop breathing animation to avoid conflicts
                 section.style.animation = 'none';
                 // Force reflow to ensure transition triggers
                 requestAnimationFrame(() => {
-                    section.classList.add('revealed'); // Triggers 2s slide-up
-                    // Hide section after transition completes
-                    section.addEventListener('transitionend', () => {
-                        section.classList.add('hidden');
-                    }, { once: true });
+                    requestAnimationFrame(() => {
+                        section.classList.add('revealed'); // Triggers 2s blur-to-clear
+                        // Hide section after transition completes
+                        section.addEventListener('transitionend', () => {
+                            section.classList.add('hidden');
+                            console.log(`Transition ended for section ${index}`); // Debug log
+                        }, { once: true });
+                    });
                 });
                 dayText.innerHTML = `Day ${currentDay}/30<br><span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
                 button.disabled = true; // Disable to prevent multiple clicks (resets on refresh)
