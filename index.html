@@ -78,13 +78,13 @@
             z-index: 2;
         }
         .section {
-            clip-path: circle(100%); /* Fully covers section */
-            transition: clip-path 2s ease-in-out; /* 2s clip-path reveal */
+            clip-path: path('M0,20 C0,0 20,0 50,0 C80,0 100,0 100,20 C100,40 80,60 50,100 C20,60 0,40 0,20 Z'); /* Heart shape */
+            transition: clip-path 4s ease-in-out; /* 4s heart reveal */
             animation: breathe 6s ease-in-out infinite;
             background-color: #9580C8; /* Initial color for breathing */
         }
         .section.revealed {
-            clip-path: circle(0%); /* Shrink to reveal image */
+            clip-path: path('M0,0.2 C0,0 0.2,0 0.5,0 C0.8,0 1,0 1,0.2 C1,0.4 0.8,0.6 0.5,1 C0.2,0.6 0,0.4 0,0.2 Z'); /* Tiny heart */
             animation: none; /* Stop breathing animation */
         }
         .section.hidden {
@@ -186,13 +186,13 @@
             if (currentDay <= 30) {
                 const index = revealOrder[currentDay - 1];
                 const section = sections[index];
-                console.log(`Revealing section ${index} with clip-path transition`); // Debug log
+                console.log(`Revealing section ${index} with heart clip-path transition`); // Debug log
                 // Stop breathing animation to avoid conflicts
                 section.style.animation = 'none';
                 // Force reflow to ensure transition triggers
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        section.classList.add('revealed'); // Triggers 2s clip-path
+                        section.classList.add('revealed'); // Triggers 4s heart clip-path
                         // Hide section after transition completes
                         section.addEventListener('transitionend', () => {
                             section.classList.add('hidden');
