@@ -78,14 +78,13 @@
             z-index: 2;
         }
         .section {
-            opacity: 0.99; /* Slight opacity to ensure transition triggers */
-            filter: blur(20px);
-            transition: filter 2s ease-in-out, opacity 2s ease-in-out; /* 2s blur-to-clear and opacity */
+            clip-path: circle(100%); /* Fully covers section */
+            transition: clip-path 2s ease-in-out; /* 2s clip-path reveal */
             animation: breathe 6s ease-in-out infinite;
+            background-color: #9580C8; /* Initial color for breathing */
         }
         .section.revealed {
-            filter: blur(0); /* Clear blur to reveal image */
-            opacity: 0;
+            clip-path: circle(0%); /* Shrink to reveal image */
             animation: none; /* Stop breathing animation */
         }
         .section.hidden {
@@ -187,13 +186,13 @@
             if (currentDay <= 30) {
                 const index = revealOrder[currentDay - 1];
                 const section = sections[index];
-                console.log(`Revealing section ${index} with blur transition`); // Debug log
+                console.log(`Revealing section ${index} with clip-path transition`); // Debug log
                 // Stop breathing animation to avoid conflicts
                 section.style.animation = 'none';
                 // Force reflow to ensure transition triggers
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        section.classList.add('revealed'); // Triggers 2s blur-to-clear
+                        section.classList.add('revealed'); // Triggers 2s clip-path
                         // Hide section after transition completes
                         section.addEventListener('transitionend', () => {
                             section.classList.add('hidden');
