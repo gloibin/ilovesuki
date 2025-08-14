@@ -78,18 +78,26 @@
             z-index: 2;
         }
         .section {
-            opacity: 1;
-            transition: opacity 2s ease-in-out; /* Ensure 2s fade for reveal */
+            backface-visibility: visible; /* Ensure section is visible during flip */
+            transform: rotateY(0deg);
+            transition: transform 2s ease-in-out; /* 2s flip animation */
             animation: breathe 6s ease-in-out infinite;
         }
         .section.revealed {
-            opacity: 0;
-            animation: none; /* Stop breathing animation when revealed */
+            transform: rotateY(180deg); /* Flip to reveal image underneath */
+            animation: none; /* Stop breathing animation */
+        }
+        .section.hidden {
+            visibility: hidden; /* Hide after flip to show image */
         }
         @keyframes breathe {
             0% { background-color: #9580C8; } /* Muted periwinkle */
             50% { background-color: #4A4AA2; } /* Muted lapis */
             100% { background-color: #9580C8; }
+        }
+        @keyframes flip {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(180deg); }
         }
         #button {
             position: absolute;
@@ -174,14 +182,19 @@
         // Instantly reveal previous days' sections (no animation)
         for (let i = 0; i < revealedOnLoad; i++) {
             const index = revealOrder[i];
-            sections[index].classList.add('revealed');
+            sections[index].classList.add('revealed', 'hidden');
         }
         
         // Handle button click for today's section
         button.addEventListener('click', () => {
             if (currentDay <= 30) {
                 const index = revealOrder[currentDay - 1];
-                sections[index].classList.add('revealed'); // Triggers 2s opacity transition
+                const section = sections[index];
+                section.classList.add('revealed');
+                // After flip animation completes, hide the section
+                section.addEventListener('transitionend', () => {
+                    section.classList.add('hidden');
+                }, { once: true });
                 dayText.innerHTML = `Day ${currentDay}/30<br><span class="suki-text">Suki loves when you visit every day. 🤍</span>`;
                 button.disabled = true; // Disable to prevent multiple clicks (resets on refresh)
             }
